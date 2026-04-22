@@ -6,7 +6,8 @@ interface ToastState {
   visible: boolean
   message: string
   variant: ToastVariant
-  show: (message: string, variant?: ToastVariant) => void
+  className?: string
+  show: (message: string, variant?: ToastVariant, className?: string) => void
   hide: () => void
 }
 
@@ -16,9 +17,15 @@ export const useToastStore = create<ToastState>()(
       visible: false,
       message: '',
       variant: 'error',
-      show: (message, variant = 'error') =>
-        set({ visible: true, message, variant }, undefined, 'toast/show'),
-      hide: () => set({ visible: false }, undefined, 'toast/hide'),
+      className: undefined,
+      show: (message, variant = 'error', className) =>
+        set(
+          { visible: true, message, variant, className },
+          undefined,
+          'toast/show'
+        ),
+      hide: () =>
+        set({ visible: false, className: undefined }, undefined, 'toast/hide'),
     }),
     { name: 'ToastStore' }
   )
