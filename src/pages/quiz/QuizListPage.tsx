@@ -35,7 +35,9 @@ export function QuizListPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="text-text-heading text-2xl font-bold">쪽지시험</h1>
+      <h1 className="text-text-heading text-[32px] leading-[140%] font-bold tracking-[-0.03em]">
+        쪽지시험
+      </h1>
 
       <Tabs value={status} onChange={(v) => setStatus(v as TabStatus)}>
         <TabList aria-label="쪽지시험 필터">
