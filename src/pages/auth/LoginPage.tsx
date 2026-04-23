@@ -37,7 +37,7 @@ export function LoginPage() {
       { email, password },
       {
         onSuccess: (data) => {
-          localStorage.setItem('access_token', data.access_token)
+          localStorage.setItem('accesstoken', data.access_token)
           navigate('/')
         },
         onError: (error: AxiosError<LoginErrorResponse>) => {
