@@ -6,8 +6,10 @@ import bannerImg from '@/assets/main-banner.png'
 import examImg from '@/assets/main-exam.png'
 import qnaImg from '@/assets/main-qna.png'
 import communityImg from '@/assets/main-community.png'
+import { Spinner, ErrorFallback } from '@/components'
 
 type FeatureTab = 'exam' | 'qna' | 'community'
+type ImageStatus = 'loading' | 'loaded' | 'error'
 
 interface TabConfig {
   key: FeatureTab
@@ -41,6 +43,69 @@ const TABS: TabConfig[] = [
   },
 ]
 
+interface ImageWithStatesProps {
+  src: string
+  alt: string
+  className?: string
+  loading?: 'lazy' | 'eager'
+  fetchPriority?: 'high' | 'low' | 'auto'
+  spinnerMinHeight?: number
+}
+
+function ImageWithStates({
+  src,
+  alt,
+  className = '',
+  loading = 'lazy',
+  fetchPriority,
+  spinnerMinHeight = 256,
+}: ImageWithStatesProps) {
+  const [status, setStatus] = useState<ImageStatus>('loading')
+  const [retryKey, setRetryKey] = useState(0)
+
+  if (status === 'error') {
+    return (
+      <ErrorFallback
+        message="이미지를 불러올 수 없어요."
+        onRetry={() => {
+          setStatus('loading')
+          setRetryKey((k) => k + 1)
+        }}
+      />
+    )
+  }
+
+  return (
+    <div className="relative">
+      {status === 'loading' && (
+        <div
+          style={{ minHeight: spinnerMinHeight }}
+          className="flex items-center justify-center"
+          aria-hidden="true"
+        >
+          <Spinner size="lg" label="이미지 로딩 중..." />
+        </div>
+      )}
+      <img
+        key={retryKey}
+        src={src}
+        alt={alt}
+        className={[
+          className,
+          status === 'loading' ? 'pointer-events-none absolute opacity-0' : '',
+        ]
+          .filter(Boolean)
+          .join(' ')}
+        loading={loading}
+        decoding="async"
+        fetchPriority={fetchPriority}
+        onLoad={() => setStatus('loaded')}
+        onError={() => setStatus('error')}
+      />
+    </div>
+  )
+}
+
 export function HomePage() {
   const [activeTab, setActiveTab] = useState<FeatureTab>('exam')
   const current = TABS.find((t) => t.key === activeTab) ?? TABS[0]
@@ -54,16 +119,18 @@ export function HomePage() {
             {current.heading}
           </h2>
 
-          {/* Tab navigation */}
-          <div
-            role="tablist"
-            aria-label="서비스 기능 탭"
-            className="flex justify-center"
-          >
-            <div className="border-border-base bg-bg-base inline-flex gap-2 rounded-full border p-2">
+          {/* Tab navigation — 바깥 div는 순수 레이아웃, tablist가 pill 컨테이너를 직접 담당 */}
+          <div className="flex justify-center">
+            <div
+              role="tablist"
+              aria-label="서비스 기능 탭"
+              className="border-border-base bg-bg-base inline-flex gap-2 rounded-full border p-2"
+            >
               {TABS.map((tab) => (
                 <button
                   key={tab.key}
+                  id={`tab-${tab.key}`}
+                  type="button"
                   role="tab"
                   aria-selected={activeTab === tab.key}
                   onClick={() => setActiveTab(tab.key)}
@@ -81,29 +148,30 @@ export function HomePage() {
             </div>
           </div>
 
-          {/* Tab content — key 변경 시 재마운트되어 애니메이션 재실행 */}
+          {/* Tab content — key 변경 시 재마운트되어 애니메이션 및 로딩 상태 초기화 */}
           <div
             key={activeTab}
             role="tabpanel"
+            aria-labelledby={`tab-${activeTab}`}
             className="animate-fade-in mt-16"
           >
-            <img
+            <ImageWithStates
               src={current.image}
               alt={current.alt}
               className="mx-auto block w-full max-w-5xl"
-              loading="lazy"
-              decoding="async"
             />
           </div>
         </div>
       </section>
+
       {/* Banner section */}
       <section className="flex justify-center py-20">
-        <img
+        <ImageWithStates
           src={bannerImg}
           alt="함께 묻고 답하며, 현직자의 피드백으로 빠르게 성장할 수 있어요"
           loading="eager"
           fetchPriority="high"
+          spinnerMinHeight={320}
         />
       </section>
     </main>
