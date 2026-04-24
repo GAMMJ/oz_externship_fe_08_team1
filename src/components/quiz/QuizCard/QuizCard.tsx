@@ -88,6 +88,7 @@ export function QuizCard({ item }: QuizCardProps) {
             alt={exam.title}
             width={28}
             height={28}
+            loading="lazy"
             className="h-full w-full object-contain"
           />
         </div>
