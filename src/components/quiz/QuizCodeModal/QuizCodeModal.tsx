@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router'
-import type { AxiosError } from 'axios'
+import axios from 'axios'
 import { Modal } from '@/components/common/Modal'
 import { Input } from '@/components/common/Input'
 import { Button } from '@/components/common/Button'
@@ -9,6 +9,15 @@ import { HTTP_STATUS } from '@/constants/httpStatus'
 import { useCheckCode } from '@/features/exams/deployment-check-code'
 import { useToastStore } from '@/stores/toastStore'
 import type { CheckCodeErrorResponse } from '@/features/exams/deployment-check-code'
+
+const BASE62_REGEX = /^[0-9a-zA-Z]{6}$/
+
+// 401은 axios 인터셉터가 토큰 갱신 후 로그인 리다이렉트 처리
+const TOAST_ERROR_MESSAGES: Partial<Record<number, string>> = {
+  [HTTP_STATUS.FORBIDDEN]: '시험에 응시할 권한이 없습니다.',
+  [HTTP_STATUS.NOT_FOUND]: '배포 정보를 찾을 수 없습니다.',
+  [HTTP_STATUS.LOCKED]: '아직 응시할 수 없습니다.',
+}
 
 interface QuizCodeModalProps {
   isOpen: boolean
@@ -42,8 +51,6 @@ export function QuizCodeModal({
     onClose()
   }
 
-  const BASE62_REGEX = /^[0-9a-zA-Z]{6}$/
-
   const handleSubmit = () => {
     if (!code.trim()) {
       setInputError('참가 코드를 입력해주세요.')
@@ -62,26 +69,22 @@ export function QuizCodeModal({
           navigate(ROUTES.QUIZ.EXAM.replace(':quizId', String(deploymentId)))
         },
         onError: (error) => {
-          const axiosError = error as AxiosError<CheckCodeErrorResponse>
-          const status = axiosError.response?.status
-          const errorDetail = axiosError.response?.data?.error_detail
+          if (!axios.isAxiosError<CheckCodeErrorResponse>(error)) return
+
+          const status = error.response?.status
+          const errorDetail = error.response?.data?.error_detail
 
           if (status === HTTP_STATUS.BAD_REQUEST) {
             setInputError(errorDetail ?? '응시 코드가 일치하지 않습니다.')
-          } else if (status === HTTP_STATUS.UNAUTHORIZED) {
-            showToast(
-              errorDetail ?? '자격 인증 데이터가 제공되지 않았습니다.',
-              'error'
-            )
-          } else if (status === HTTP_STATUS.FORBIDDEN) {
-            showToast(errorDetail ?? '시험에 응시할 권한이 없습니다.', 'error')
-          } else if (status === HTTP_STATUS.NOT_FOUND) {
-            showToast(errorDetail ?? '배포 정보를 찾을 수 없습니다.', 'error')
-          } else if (status === HTTP_STATUS.LOCKED) {
-            showToast(errorDetail ?? '아직 응시할 수 없습니다.', 'error')
-          } else {
-            showToast('서버 오류가 발생했습니다.', 'error')
+            return
           }
+
+          const toastMessage =
+            (status !== undefined ? TOAST_ERROR_MESSAGES[status] : undefined) ??
+            errorDetail ??
+            '서버 오류가 발생했습니다.'
+
+          showToast(toastMessage, 'error')
         },
       }
     )
@@ -91,12 +94,13 @@ export function QuizCodeModal({
     <Modal isOpen={isOpen} onClose={handleClose} maxWidth="max-w-sm">
       {/* 시험 정보 */}
       <div className="mb-8 flex flex-col items-center gap-3">
-        <div className="bg-primary-100 flex h-12 w-12 shrink-0 items-center justify-center p-[10px]">
+        <div className="bg-primary-100 flex h-12 w-12 shrink-0 items-center justify-center p-2.5">
           <img
             src={thumbnailUrl}
             alt={examTitle}
             width={28}
             height={28}
+            loading="lazy"
             className="h-full w-full object-contain"
           />
         </div>
