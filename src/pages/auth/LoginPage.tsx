@@ -59,9 +59,6 @@ export function LoginPage() {
               )
               setIsAlertOpen(true)
             }
-            if (errorDetail.email) {
-              setEmailError(errorDetail.email[0])
-            }
             if (errorDetail.password) {
               setPasswordError(errorDetail.password[0])
             }
