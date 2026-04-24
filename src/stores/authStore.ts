@@ -18,7 +18,7 @@ interface AuthState {
 export const useAuthStore = create<AuthState>()(
   devtools(
     (set) => ({
-      isAuthenticated: false,
+      isAuthenticated: !!localStorage.getItem('accessToken'),
       user: null,
       login: (user) =>
         set({ isAuthenticated: true, user }, undefined, 'auth/login'),

@@ -7,6 +7,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const queryClient = useQueryClient()
   const { login: setAuth } = useAuthStore()
 
+  //
   useEffect(() => {
     const token = localStorage.getItem('accessToken')
     if (!token) return
