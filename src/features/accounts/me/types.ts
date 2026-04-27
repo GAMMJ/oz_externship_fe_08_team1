@@ -11,3 +11,21 @@ export interface MeResponse {
   cohort_id: number | null
   created_at: string
 }
+
+export interface MeUpdateRequest {
+  nickname?: string
+  name?: string
+  birthday?: string
+  gender?: 'M' | 'F'
+}
+
+export interface MeUpdateResponse {
+  id: number
+  email: string
+  nickname: string
+  name: string
+  birthday: string
+  gender: 'M' | 'F'
+  phone_number: string
+  updated_at: string
+}

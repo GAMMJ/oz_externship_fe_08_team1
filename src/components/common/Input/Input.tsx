@@ -76,7 +76,9 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
                 : 'border-border-base focus:border-primary',
             disabled
               ? 'bg-bg-muted text-text-muted cursor-not-allowed opacity-60'
-              : '',
+              : props.readOnly
+                ? 'bg-bg-muted text-text-muted focus:border-border-base cursor-default'
+                : '',
             className,
           ]
             .filter(Boolean)
