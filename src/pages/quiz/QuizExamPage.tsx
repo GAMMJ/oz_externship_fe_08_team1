@@ -1,6 +1,6 @@
 import { Suspense, useState, useRef, useCallback, useEffect } from 'react'
 import { X } from 'lucide-react'
-import { useParams, useNavigate, Navigate } from 'react-router'
+import { useParams, useNavigate, useLocation, Navigate } from 'react-router'
 import axios from 'axios'
 import { Button } from '@/components/common/Button'
 import { Spinner } from '@/components/common/Spinner'
@@ -329,9 +329,14 @@ function ExamContent({ deploymentId }: ExamContentProps) {
  */
 export function QuizExamPage() {
   const { quizId } = useParams<{ quizId: string }>()
+  const location = useLocation()
   const deploymentId = Number(quizId)
 
   if (!quizId || Number.isNaN(deploymentId)) {
+    return <Navigate to="/mypage/quiz" replace />
+  }
+
+  if (!location.state?.fromCode) {
     return <Navigate to="/mypage/quiz" replace />
   }
 
