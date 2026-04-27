@@ -67,7 +67,9 @@ export function QuizCodeModal({
       { code },
       {
         onSuccess: () => {
-          navigate(ROUTES.QUIZ.EXAM.replace(':quizId', String(deploymentId)))
+          navigate(ROUTES.QUIZ.EXAM.replace(':quizId', String(deploymentId)), {
+            state: { fromCode: true },
+          })
         },
         onError: (error) => {
           if (!axios.isAxiosError<CheckCodeErrorResponse>(error)) return
