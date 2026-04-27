@@ -59,7 +59,7 @@ function MypageEditContent() {
   const [imagePreview, setImagePreview] = useState<string | null>(null)
 
   // Form state
-  const [nickname, setNickname] = useState(me.nickname)
+  const [nickname, setNickname] = useState(me.nickname ?? '')
   const gender = me.gender
   const [nicknameStatus, setNicknameStatus] = useState<
     'idle' | 'valid' | 'invalid'
@@ -109,10 +109,13 @@ function MypageEditContent() {
         const presigned = await getPresignedUrl.mutateAsync({
           file_name: imageFile.name,
         })
-        await fetch(presigned.presigned_url, {
+        const uploadRes = await fetch(presigned.presigned_url, {
           method: 'PUT',
           body: imageFile,
         })
+        if (!uploadRes.ok) {
+          throw new Error(`이미지 업로드 실패: ${uploadRes.status}`)
+        }
         await updateProfileImage.mutateAsync({
           profile_img_url: presigned.img_url,
         })
