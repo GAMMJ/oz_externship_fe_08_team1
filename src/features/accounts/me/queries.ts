@@ -1,6 +1,11 @@
-import { queryOptions, useSuspenseQuery } from '@tanstack/react-query'
+import {
+  queryOptions,
+  useMutation,
+  useQueryClient,
+  useSuspenseQuery,
+} from '@tanstack/react-query'
 import api from '@/api/instance'
-import type { MeResponse } from './types'
+import type { MeResponse, MeUpdateRequest, MeUpdateResponse } from './types'
 
 export const meQueries = {
   all: () => ({ queryKey: ['accounts', 'me'] as const }),
@@ -16,4 +21,17 @@ export const meQueries = {
 
 export function useMe() {
   return useSuspenseQuery(meQueries.detail())
+}
+
+export function useUpdateMe() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (body: MeUpdateRequest) => {
+      const { data } = await api.patch<MeUpdateResponse>('accounts/me', body)
+      return data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(meQueries.all())
+    },
+  })
 }
