@@ -1,7 +1,7 @@
+import type { ApiErrorBody } from '@/features/exams/submissions'
+
 export interface CheckCodeRequest {
   code: string
 }
 
-export interface CheckCodeErrorResponse {
-  error_detail: string
-}
+export type CheckCodeErrorResponse = ApiErrorBody
