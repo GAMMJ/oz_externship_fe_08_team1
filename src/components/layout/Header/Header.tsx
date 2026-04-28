@@ -1,11 +1,12 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router'
+import { useQueryClient } from '@tanstack/react-query'
 import logoImg from '@/assets/logo.png'
 import { ROUTES } from '@/constants/routes'
 import { ProfileIcon } from './icons'
 import { ProfileDropdown } from './ProfileDropdown'
 import { useAuthStore } from '@/stores/authStore'
-import { useLogout } from '@/features/accounts/logout/queries'
+import { useLogout } from '@/features/accounts/logout'
 
 export interface HeaderProps {
   bannerText?: string
@@ -16,6 +17,7 @@ export function Header({
 }: HeaderProps) {
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const { isAuthenticated, user, logout } = useAuthStore()
   const { mutate: logoutApi } = useLogout()
 
@@ -91,9 +93,10 @@ export function Header({
                 }}
                 onLogout={() => {
                   logoutApi(undefined, {
-                    onSuccess: () => {
+                    onSettled: () => {
                       logout()
                       localStorage.removeItem('accessToken')
+                      queryClient.clear()
                       setDropdownOpen(false)
                     },
                   })
