@@ -1,13 +1,12 @@
 import { Suspense, useState, useRef, useCallback, useEffect } from 'react'
-import { X } from 'lucide-react'
+import { X, AlertCircle, Check } from 'lucide-react'
 import { useParams, useNavigate, useLocation, Navigate } from 'react-router'
-import axios from 'axios'
 import { Button } from '@/components/common/Button'
 import { Spinner } from '@/components/common/Spinner'
-import { ExamHeader } from '@/components/quiz/ExamHeader'
-import { CheatingWarningModal } from '@/components/quiz/CheatingWarningModal'
-import { ExamSubmitModal } from '@/components/quiz/ExamSubmitModal'
-import { QuestionCard } from '@/components/quiz/QuestionCard'
+import { Modal } from '@/components/common/Modal'
+import { ExamHeader } from '@/components/quiz/exam/ExamHeader'
+import { CheatingWarningModal } from '@/components/quiz/exam/CheatingWarningModal'
+import { QuestionCard } from '@/components/quiz/exam/QuestionCard'
 import { useDeploymentDetail } from '@/features/exams/deployment-detail'
 import { useSubmitExam } from '@/features/exams/submissions'
 import { useExamTimer } from '@/hooks/useExamTimer'
@@ -15,12 +14,10 @@ import { useCheatingDetector } from '@/hooks/useCheatingDetector'
 import { useToastStore } from '@/stores/toastStore'
 import { ROUTES } from '@/constants/routes'
 import { HTTP_STATUS } from '@/constants/httpStatus'
-import type { Question } from '@/features/exams/deployment-detail'
+import { getErrorDetail } from '@/utils/getErrorDetail'
+import { getErrorStatus } from '@/utils/getErrorStatus'
+import { initAnswers, isAnswered } from './examUtils'
 import type { SubmissionAnswer } from '@/features/exams/submissions'
-
-interface ApiErrorBody {
-  error_detail?: string
-}
 
 const ERROR_MAP: Record<number, { fallback: string; redirect?: string }> = {
   [HTTP_STATUS.BAD_REQUEST]: {
@@ -46,58 +43,8 @@ const ERROR_MAP: Record<number, { fallback: string; redirect?: string }> = {
   },
 }
 
-function initAnswers(questions: Question[]): Record<number, string | string[]> {
-  const map: Record<number, string | string[]> = {}
-  for (const q of questions) {
-    if (
-      q.type === 'single_choice' ||
-      q.type === 'ox' ||
-      q.type === 'short_answer'
-    ) {
-      map[q.question_id] =
-        typeof q.answer_input === 'string' ? q.answer_input : ''
-    } else if (q.type === 'multiple_choice') {
-      map[q.question_id] = Array.isArray(q.answer_input) ? q.answer_input : []
-    } else if (q.type === 'ordering') {
-      map[q.question_id] = Array.isArray(q.answer_input) ? q.answer_input : []
-    } else if (q.type === 'fill_blank') {
-      map[q.question_id] = Array.isArray(q.answer_input)
-        ? q.answer_input
-        : Array<string>(q.blank_count ?? 0).fill('')
-    }
-  }
-  return map
-}
-
-function isAnswered(q: Question, answer: string | string[]): boolean {
-  if (q.type === 'ordering') {
-    const ans = answer as string[]
-    return ans.length === (q.options?.length ?? 0) && ans.every((a) => a !== '')
-  }
-  if (Array.isArray(answer))
-    return answer.length > 0 && answer.every((a) => a !== '')
-  return (answer as string).trim() !== ''
-}
-
 interface ExamContentProps {
   deploymentId: number
-}
-
-function AlertCircleIcon() {
-  return (
-    <svg
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      aria-hidden="true"
-      className="text-error shrink-0"
-    >
-      <circle cx="12" cy="12" r="10" fill="currentColor" />
-      <path d="M12 7v6" stroke="white" strokeWidth="2" strokeLinecap="round" />
-      <circle cx="12" cy="16.5" r="1" fill="white" />
-    </svg>
-  )
 }
 
 function ExamContent({ deploymentId }: ExamContentProps) {
@@ -171,11 +118,8 @@ function ExamContent({ deploymentId }: ExamContentProps) {
           },
           onError: (error) => {
             setIsSubmitted(false)
-            if (!axios.isAxiosError(error)) return
-
-            const status = error.response?.status
-            const detail = (error.response?.data as ApiErrorBody | undefined)
-              ?.error_detail
+            const detail = getErrorDetail(error)
+            const status = getErrorStatus(error)
             const config = status ? ERROR_MAP[status] : undefined
             showToast(
               detail ?? config?.fallback ?? '서버 오류가 발생했습니다.',
@@ -208,7 +152,7 @@ function ExamContent({ deploymentId }: ExamContentProps) {
     )
   }, [answers, cheatingCount, handleSubmit, navigate])
 
-  const { formattedTime, remainingSeconds } = useExamTimer({
+  const { remainingSeconds } = useExamTimer({
     initialSeconds: duration_time * 60 - elapsed_time,
     onExpire: handleTimerExpire,
   })
@@ -242,7 +186,6 @@ function ExamContent({ deploymentId }: ExamContentProps) {
     <div className="min-h-screen bg-white">
       <ExamHeader
         examTitle={exam_title}
-        formattedTime={formattedTime}
         remainingSeconds={remainingSeconds}
         cheatingCount={cheatingCount}
         onBack={handleBack}
@@ -256,7 +199,12 @@ function ExamContent({ deploymentId }: ExamContentProps) {
             <div className="flex items-start justify-between gap-3">
               <div className="flex items-start gap-3">
                 <span className="mt-0.5 shrink-0">
-                  <AlertCircleIcon />
+                  <AlertCircle
+                    size={24}
+                    className="text-error stroke-primary-100"
+                    fill="currentColor"
+                    aria-hidden="true"
+                  />
                 </span>
                 <div className="flex flex-col gap-5">
                   <p className="text-lg leading-normal font-semibold tracking-[-0.03em] text-gray-900">
@@ -315,12 +263,40 @@ function ExamContent({ deploymentId }: ExamContentProps) {
       />
 
       {/* 제출 완료 모달 */}
-      <ExamSubmitModal
+      <Modal
         isOpen={submitRedirectUrl !== null}
-        onConfirm={() => {
+        onClose={() => {
           if (submitRedirectUrl) navigate(submitRedirectUrl, { replace: true })
         }}
-      />
+        maxWidth="max-w-md"
+      >
+        <div className="flex flex-col items-center gap-6 py-4 text-center">
+          <div className="bg-success flex h-20 w-20 items-center justify-center rounded-full">
+            <Check size={40} stroke="white" aria-hidden="true" />
+          </div>
+          <div className="flex flex-col gap-3">
+            <h3 className="text-text-heading text-xl leading-normal font-semibold tracking-[-0.03em]">
+              시험 제출이 <span className="text-success">완료</span> 되었습니다
+            </h3>
+            <div className="text-text-body flex flex-col text-base leading-normal">
+              <p>시험이 종료 되었습니다</p>
+              <p>시험 제출이 완료 되었습니다!</p>
+              <p>정답 확인 페이지로 넘어갑니다.</p>
+            </div>
+          </div>
+          <Button
+            variant="primary"
+            size="lg"
+            fullWidth
+            onClick={() => {
+              if (submitRedirectUrl)
+                navigate(submitRedirectUrl, { replace: true })
+            }}
+          >
+            확인
+          </Button>
+        </div>
+      </Modal>
     </div>
   )
 }

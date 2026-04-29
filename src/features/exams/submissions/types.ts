@@ -19,3 +19,7 @@ export interface SubmissionResponse {
   correct_answer_count: number
   redirect_url: string
 }
+
+export interface ApiErrorBody {
+  error_detail?: string
+}

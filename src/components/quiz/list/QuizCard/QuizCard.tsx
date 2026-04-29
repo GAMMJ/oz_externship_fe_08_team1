@@ -2,8 +2,8 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router'
 import { Button } from '@/components/common/Button'
 import { ROUTES } from '@/constants/routes'
-import { ExamThumbnail } from '@/components/quiz/ExamThumbnail'
-import { QuizCodeModal } from '@/components/quiz/QuizCodeModal'
+import { ExamThumbnail } from '@/components/quiz/list/ExamThumbnail'
+import { QuizCodeModal } from '@/components/quiz/list/QuizCodeModal'
 import type { DeploymentListItem } from '@/features/exams/deployments'
 
 interface QuizCardProps {

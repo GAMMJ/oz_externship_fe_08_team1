@@ -1,9 +1,8 @@
-import { OXQuestion } from '@/components/quiz/OXQuestion'
-import { SingleChoiceQuestion } from '@/components/quiz/SingleChoiceQuestion'
-import { MultipleChoiceQuestion } from '@/components/quiz/MultipleChoiceQuestion'
-import { ShortAnswerQuestion } from '@/components/quiz/ShortAnswerQuestion'
-import { OrderingQuestion } from '@/components/quiz/OrderingQuestion'
-import { FillBlankQuestion } from '@/components/quiz/FillBlankQuestion'
+import { OXQuestion } from '@/components/quiz/exam/questions/OXQuestion'
+import { SingleChoiceQuestion } from '@/components/quiz/exam/questions/SingleChoiceQuestion'
+import { MultipleChoiceQuestion } from '@/components/quiz/exam/questions/MultipleChoiceQuestion'
+import { OrderingQuestion } from '@/components/quiz/exam/questions/OrderingQuestion'
+import { FillBlankQuestion } from '@/components/quiz/exam/questions/FillBlankQuestion'
 import type { Question } from '@/features/exams/deployment-detail'
 
 const TYPE_LABELS: Record<Question['type'], string> = {
@@ -44,7 +43,17 @@ export function QuestionCard({
             />
           )
         }
-        return <ShortAnswerQuestion answer={answer} onChange={onChange} />
+        return (
+          <div className="max-w-[648px]">
+            <input
+              type="text"
+              value={answer}
+              onChange={(e) => onChange(e.target.value)}
+              placeholder="20글자 이내로 입력해 주세요."
+              className="bg-bg-muted placeholder:text-gray-350 h-12 w-full rounded px-4 py-[10px] text-base leading-normal tracking-[-0.03em] text-gray-800 outline-none"
+            />
+          </div>
+        )
       }
       case 'multiple_choice':
       case 'ordering':
@@ -71,7 +80,6 @@ export function QuestionCard({
         return (
           <FillBlankQuestion
             prompt={question.prompt ?? ''}
-            blankCount={question.blank_count ?? 0}
             answer={answer}
             onChange={onChange}
           />

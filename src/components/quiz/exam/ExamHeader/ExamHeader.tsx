@@ -2,7 +2,6 @@ import { ArrowLeft } from 'lucide-react'
 
 interface ExamHeaderProps {
   examTitle: string
-  formattedTime: string
   remainingSeconds: number
   cheatingCount: number
   onBack: () => void
@@ -10,13 +9,13 @@ interface ExamHeaderProps {
 
 export function ExamHeader({
   examTitle,
-  formattedTime,
   remainingSeconds,
   cheatingCount,
   onBack,
 }: ExamHeaderProps) {
   const isUrgent = remainingSeconds > 0 && remainingSeconds <= 60
-  const [minutes, seconds] = formattedTime.split(':')
+  const minutes = String(Math.floor(remainingSeconds / 60)).padStart(2, '0')
+  const seconds = String(remainingSeconds % 60).padStart(2, '0')
 
   const timerColor = isUrgent ? 'text-error' : 'text-primary'
 
