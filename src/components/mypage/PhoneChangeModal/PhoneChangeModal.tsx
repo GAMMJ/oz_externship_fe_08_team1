@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react'
+import { RefreshCw, Check } from 'lucide-react'
 import { Modal, Input, Button } from '@/components'
 import { useSendSms, useVerifySms } from '@/features/accounts/verification'
 import { useChangePhone } from '@/features/accounts/change-phone'
-import phoneIcon from '@/assets/icons/phone.svg'
-import checkIcon from '@/assets/icons/check.svg'
 
 interface PhoneChangeModalProps {
   isOpen: boolean
@@ -138,7 +137,7 @@ export function PhoneChangeModal({ isOpen, onClose }: PhoneChangeModalProps) {
       {/* Icon + Title + Description */}
       <div className="mb-6 flex flex-col items-center text-center">
         <div className="bg-primary-100 mb-1 flex h-12 w-12 items-center justify-center rounded-full">
-          <img src={phoneIcon} alt="" />
+          <RefreshCw size={24} className="text-primary" />
         </div>
         <h2 className="text-text-heading mt-3 text-xl font-bold">
           휴대폰 번호 변경
@@ -227,7 +226,7 @@ export function PhoneChangeModal({ isOpen, onClose }: PhoneChangeModalProps) {
                 disabled={codeVerified}
                 rightElement={
                   codeVerified ? (
-                    <img src={checkIcon} alt="" />
+                    <Check size={16} className="text-success-dark" />
                   ) : (
                     <span className="text-error text-sm font-medium">
                       {formatTime(timeLeft)}
