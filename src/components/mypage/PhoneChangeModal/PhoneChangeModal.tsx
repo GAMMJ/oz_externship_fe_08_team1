@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react'
 import { Modal, Input, Button } from '@/components'
 import { useSendSms, useVerifySms } from '@/features/accounts/verification'
 import { useChangePhone } from '@/features/accounts/change-phone'
+import phoneIcon from '@/assets/icons/phone.svg'
+import checkIcon from '@/assets/icons/check.svg'
 
 interface PhoneChangeModalProps {
   isOpen: boolean
@@ -18,50 +20,6 @@ function formatTime(seconds: number): string {
   const m = Math.floor(seconds / 60)
   const s = seconds % 60
   return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
-}
-
-function PhoneIcon() {
-  return (
-    <div className="bg-primary-100 mb-1 flex h-12 w-12 items-center justify-center rounded-full">
-      <svg
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-        className="text-primary"
-      >
-        <path
-          d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-    </div>
-  )
-}
-
-function CheckIcon() {
-  return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 16 16"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className="text-success-dark"
-    >
-      <path
-        d="M3 8l4 4 6-7"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  )
 }
 
 export function PhoneChangeModal({ isOpen, onClose }: PhoneChangeModalProps) {
@@ -179,7 +137,9 @@ export function PhoneChangeModal({ isOpen, onClose }: PhoneChangeModalProps) {
     <Modal isOpen={isOpen} onClose={handleClose} maxWidth="max-w-[480px]">
       {/* Icon + Title + Description */}
       <div className="mb-6 flex flex-col items-center text-center">
-        <PhoneIcon />
+        <div className="bg-primary-100 mb-1 flex h-12 w-12 items-center justify-center rounded-full">
+          <img src={phoneIcon} alt="" />
+        </div>
         <h2 className="text-text-heading mt-3 text-xl font-bold">
           휴대폰 번호 변경
         </h2>
@@ -267,7 +227,7 @@ export function PhoneChangeModal({ isOpen, onClose }: PhoneChangeModalProps) {
                 disabled={codeVerified}
                 rightElement={
                   codeVerified ? (
-                    <CheckIcon />
+                    <img src={checkIcon} alt="" />
                   ) : (
                     <span className="text-error text-sm font-medium">
                       {formatTime(timeLeft)}
