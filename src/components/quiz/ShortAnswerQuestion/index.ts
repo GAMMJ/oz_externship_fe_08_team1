@@ -1,1 +1,0 @@
-export { ShortAnswerQuestion } from './ShortAnswerQuestion'

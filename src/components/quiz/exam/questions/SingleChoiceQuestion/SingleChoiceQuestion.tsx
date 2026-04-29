@@ -1,4 +1,4 @@
-import { ChoiceOption } from '@/components/quiz/ChoiceOption'
+import { ChoiceOption } from '@/components/quiz/exam/questions/ChoiceOption'
 
 interface SingleChoiceQuestionProps {
   options: string[]

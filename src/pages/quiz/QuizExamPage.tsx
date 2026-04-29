@@ -1,12 +1,12 @@
 import { Suspense, useState, useRef, useCallback, useEffect } from 'react'
-import { X, AlertCircle } from 'lucide-react'
+import { X, AlertCircle, Check } from 'lucide-react'
 import { useParams, useNavigate, useLocation, Navigate } from 'react-router'
 import { Button } from '@/components/common/Button'
 import { Spinner } from '@/components/common/Spinner'
-import { ExamHeader } from '@/components/quiz/ExamHeader'
-import { CheatingWarningModal } from '@/components/quiz/CheatingWarningModal'
-import { ExamSubmitModal } from '@/components/quiz/ExamSubmitModal'
-import { QuestionCard } from '@/components/quiz/QuestionCard'
+import { Modal } from '@/components/common/Modal'
+import { ExamHeader } from '@/components/quiz/exam/ExamHeader'
+import { CheatingWarningModal } from '@/components/quiz/exam/CheatingWarningModal'
+import { QuestionCard } from '@/components/quiz/exam/QuestionCard'
 import { useDeploymentDetail } from '@/features/exams/deployment-detail'
 import { useSubmitExam } from '@/features/exams/submissions'
 import { useExamTimer } from '@/hooks/useExamTimer'
@@ -263,12 +263,40 @@ function ExamContent({ deploymentId }: ExamContentProps) {
       />
 
       {/* 제출 완료 모달 */}
-      <ExamSubmitModal
+      <Modal
         isOpen={submitRedirectUrl !== null}
-        onConfirm={() => {
+        onClose={() => {
           if (submitRedirectUrl) navigate(submitRedirectUrl, { replace: true })
         }}
-      />
+        maxWidth="max-w-md"
+      >
+        <div className="flex flex-col items-center gap-6 py-4 text-center">
+          <div className="bg-success flex h-20 w-20 items-center justify-center rounded-full">
+            <Check size={40} stroke="white" aria-hidden="true" />
+          </div>
+          <div className="flex flex-col gap-3">
+            <h3 className="text-text-heading text-xl leading-normal font-semibold tracking-[-0.03em]">
+              시험 제출이 <span className="text-success">완료</span> 되었습니다
+            </h3>
+            <div className="text-text-body flex flex-col text-base leading-normal">
+              <p>시험이 종료 되었습니다</p>
+              <p>시험 제출이 완료 되었습니다!</p>
+              <p>정답 확인 페이지로 넘어갑니다.</p>
+            </div>
+          </div>
+          <Button
+            variant="primary"
+            size="lg"
+            fullWidth
+            onClick={() => {
+              if (submitRedirectUrl)
+                navigate(submitRedirectUrl, { replace: true })
+            }}
+          >
+            확인
+          </Button>
+        </div>
+      </Modal>
     </div>
   )
 }

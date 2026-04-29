@@ -1,5 +1,5 @@
 import { Spinner } from '@/components'
-import { QuizCard } from '@/components/quiz/QuizCard'
+import { QuizCard } from '@/components/quiz/list/QuizCard'
 import { useDeployments } from '@/features/exams/deployments'
 import { useIntersectionObserver } from '@/hooks/useIntersectionObserver'
 import type { DeploymentsParams } from '@/features/exams/deployments'
