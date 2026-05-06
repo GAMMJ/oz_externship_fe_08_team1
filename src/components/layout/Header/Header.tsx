@@ -115,7 +115,6 @@ export function Header({
                     logoutApi(undefined, {
                       onSettled: () => {
                         logout()
-                        document.cookie = 'refresh_token=; Max-Age=0; path=/'
                         queryClient.clear()
                         setDropdownOpen(false)
                       },
