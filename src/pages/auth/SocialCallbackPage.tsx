@@ -53,5 +53,3 @@ export function SocialCallbackPage() {
     </div>
   )
 }
-
-export default SocialCallbackPage
