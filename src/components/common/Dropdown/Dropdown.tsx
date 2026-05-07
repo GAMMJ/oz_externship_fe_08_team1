@@ -80,7 +80,8 @@ export function Dropdown({
 
   const toggle = () => {
     if (disabled) return
-    setIsOpen((prev) => !prev)
+    const next = !isOpen
+    setIsOpen(next)
     setHighlightIndex(-1)
   }
 

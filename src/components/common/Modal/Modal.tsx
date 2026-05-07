@@ -12,6 +12,8 @@ export interface ModalProps {
   maxWidth?: string
   /** Hide the X close button */
   hideCloseButton?: boolean
+  /** Override the body wrapper className (e.g. 'overflow-visible' for dropdowns) */
+  bodyClassName?: string
 }
 
 export function Modal({
@@ -22,6 +24,7 @@ export function Modal({
   children,
   maxWidth = 'max-w-md',
   hideCloseButton = false,
+  bodyClassName = 'overflow-visible',
 }: ModalProps) {
   const overlayRef = useRef<HTMLDivElement>(null)
   const previousFocusRef = useRef<HTMLElement | null>(null)
@@ -93,11 +96,9 @@ export function Modal({
         )}
 
         {/* Body */}
-        <div className="flex-1 overflow-y-auto px-6 py-5">{children}</div>
+        <div className={`flex-1 px-6 py-5 ${bodyClassName}`}>{children}</div>
       </div>
     </div>,
     document.body
   )
 }
-
-export default Modal
