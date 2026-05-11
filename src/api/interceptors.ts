@@ -10,6 +10,23 @@ interface RetryConfig extends InternalAxiosRequestConfig {
   _retry?: boolean
 }
 
+interface PendingRequest {
+  resolve: (token: string) => void
+  reject: (err: unknown) => void
+}
+
+const REFRESH_URL = '/accounts/me/refresh'
+
+let isRefreshing = false
+let pendingQueue: PendingRequest[] = []
+
+const processQueue = (error: unknown, token: string | null) => {
+  pendingQueue.forEach(({ resolve, reject }) =>
+    error ? reject(error) : resolve(token!)
+  )
+  pendingQueue = []
+}
+
 const redirectToLogin = () => {
   useAuthStore.getState().logout()
 
@@ -39,8 +56,7 @@ export function setupInterceptors(instance: AxiosInstance): void {
         return Promise.reject(error)
       }
 
-      // me/refresh 요청 자체가 401이면 재시도 안 함
-      if (originalConfig.url?.includes('me/refresh')) {
+      if (originalConfig.url === REFRESH_URL) {
         redirectToLogin()
         return Promise.reject(error)
       }
@@ -48,21 +64,38 @@ export function setupInterceptors(instance: AxiosInstance): void {
       if (error.response.status === 401 && !originalConfig._retry) {
         originalConfig._retry = true
 
+        if (isRefreshing) {
+          return new Promise<string>((resolve, reject) => {
+            pendingQueue.push({ resolve, reject })
+          }).then((token) => {
+            originalConfig.headers.Authorization = `Bearer ${token}`
+            return instance(originalConfig)
+          })
+        }
+
+        isRefreshing = true
+
         try {
           const { data } = await instance.post(
-            '/accounts/me/refresh',
+            REFRESH_URL,
             {},
-            { withCredentials: true }
+            {
+              withCredentials: true,
+            }
           )
 
-          const newToken = data.access_token
+          const newToken: string = data.access_token
           useAuthStore.getState().setAccessToken(newToken)
+          processQueue(null, newToken)
 
           originalConfig.headers.Authorization = `Bearer ${newToken}`
           return instance(originalConfig)
         } catch (refreshError) {
+          processQueue(refreshError, null)
           redirectToLogin()
           return Promise.reject(refreshError)
+        } finally {
+          isRefreshing = false
         }
       }
 
