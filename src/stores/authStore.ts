@@ -22,17 +22,20 @@ interface AuthState {
 export const useAuthStore = create<AuthState>()(
   devtools(
     (set) => ({
-      isAuthenticated: false,
-      isLoading: true,
-      accessToken: null,
+      isAuthenticated: !!localStorage.getItem('accessToken'),
+      isLoading: !!localStorage.getItem('accessToken'),
+      accessToken: localStorage.getItem('accessToken'),
       user: null,
-      login: (user, accessToken) =>
+      login: (user, accessToken) => {
+        localStorage.setItem('accessToken', accessToken)
         set(
           { isAuthenticated: true, isLoading: false, user, accessToken },
           undefined,
           'auth/login'
-        ),
-      logout: () =>
+        )
+      },
+      logout: () => {
+        localStorage.removeItem('accessToken')
         set(
           {
             isAuthenticated: false,
@@ -42,11 +45,14 @@ export const useAuthStore = create<AuthState>()(
           },
           undefined,
           'auth/logout'
-        ),
+        )
+      },
       setLoading: (loading) =>
         set({ isLoading: loading }, undefined, 'auth/setLoading'),
-      setAccessToken: (token) =>
-        set({ accessToken: token }, undefined, 'auth/setAccessToken'),
+      setAccessToken: (token) => {
+        localStorage.setItem('accessToken', token)
+        set({ accessToken: token }, undefined, 'auth/setAccessToken')
+      },
     }),
     { name: 'AuthStore' }
   )
