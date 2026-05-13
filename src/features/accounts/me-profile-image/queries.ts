@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import api from '@/api/instance'
 import { meQueries } from '@/features/accounts/me'
+import { useAuthStore } from '@/stores/authStore'
 import type {
   PresignedUrlRequest,
   PresignedUrlResponse,
@@ -30,8 +31,9 @@ export function useUpdateProfileImage() {
       )
       return data
     },
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries(meQueries.all())
+      useAuthStore.getState().setProfileImage(variables.profile_img_url)
     },
   })
 }

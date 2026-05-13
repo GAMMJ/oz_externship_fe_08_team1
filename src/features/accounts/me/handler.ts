@@ -15,6 +15,8 @@ export const meHandlers = [
       gender: 'M',
       profile_img_url: null,
       cohort_id: 1,
+      role: 'STUDENT',
+      position: 'ENROLLED',
       created_at: '2024-01-15T09:00:00Z',
     })
   }),
@@ -31,7 +33,7 @@ export const meHandlers = [
       updated_at: new Date().toISOString(),
     })
   }),
-  http.delete(`${BASE_URL}/accounts/me`, () => {
+  http.delete(`${BASE_URL}/accounts/withdrawal`, () => {
     return new HttpResponse(null, { status: 204 })
   }),
 ]

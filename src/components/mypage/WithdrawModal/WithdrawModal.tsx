@@ -35,23 +35,16 @@ export function WithdrawModal({ isOpen, onClose }: WithdrawModalProps) {
   function handleWithdrawConfirm() {
     if (!reason) return
     setError('')
-    withdraw.mutate(
-      {
-        reason,
-        reason_detail: reasonDetail || undefined,
+    withdraw.mutate(undefined, {
+      onSuccess: () => {
+        useAuthStore.getState().logout()
+        navigate(ROUTES.AUTH.LOGIN)
       },
-      {
-        onSuccess: () => {
-          localStorage.removeItem('accessToken')
-          useAuthStore.getState().logout()
-          navigate(ROUTES.AUTH.LOGIN)
-        },
-        onError: () => {
-          setError('회원 탈퇴에 실패했습니다. 다시 시도해주세요.')
-          setIsConfirming(false)
-        },
-      }
-    )
+      onError: () => {
+        setError('회원 탈퇴에 실패했습니다. 다시 시도해주세요.')
+        setIsConfirming(false)
+      },
+    })
   }
 
   const showAdditionalFeedback = reason !== ''

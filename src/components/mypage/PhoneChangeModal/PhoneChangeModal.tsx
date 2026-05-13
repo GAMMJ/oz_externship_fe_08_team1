@@ -100,7 +100,7 @@ export function PhoneChangeModal({ isOpen, onClose }: PhoneChangeModalProps) {
 
   function handleVerifyCode() {
     verifySms.mutate(
-      { phone_number: toApiPhone(phoneNumber), code },
+      { phone_number: toApiPhone(phoneNumber), purpose: 'phone_change', code },
       {
         onSuccess: (data) => {
           setSmsToken(data.sms_token)
@@ -133,18 +133,18 @@ export function PhoneChangeModal({ isOpen, onClose }: PhoneChangeModalProps) {
       : '변경'
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} maxWidth="max-w-[480px]">
-      {/* Icon + Title + Description */}
-      <div className="mb-6 flex flex-col items-center text-center">
-        <div className="bg-primary-100 mb-1 flex h-12 w-12 items-center justify-center rounded-full">
+    <Modal
+      isOpen={isOpen}
+      onClose={handleClose}
+      maxWidth="max-w-[480px]"
+      title="휴대폰 번호 변경"
+      description="입력하신 휴대폰번호로 인증번호를 보내드릴게요."
+    >
+      {/* Icon */}
+      <div className="mb-6 flex justify-center">
+        <div className="bg-primary-100 flex h-12 w-12 items-center justify-center rounded-full">
           <RefreshCw size={24} className="text-primary" />
         </div>
-        <h2 className="text-text-heading mt-3 text-xl font-bold">
-          휴대폰 번호 변경
-        </h2>
-        <p className="text-text-muted mt-1 text-sm">
-          입력하신 휴대폰번호로 인증번호를 보내드릴게요.
-        </p>
       </div>
 
       {/* Phone input row */}

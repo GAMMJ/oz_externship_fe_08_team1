@@ -1,11 +1,12 @@
 import { create } from 'zustand'
 import { devtools } from 'zustand/middleware'
+import type { UserRole } from '@/features/accounts/me/types'
 
 interface User {
   nickname: string
   email: string
   profileImage?: string | null
-  role?: 'user' | 'student' | 'admin'
+  role?: UserRole
 }
 
 interface AuthState {
@@ -17,6 +18,7 @@ interface AuthState {
   logout: () => void
   setLoading: (loading: boolean) => void
   setAccessToken: (token: string) => void
+  setProfileImage: (url: string) => void
 }
 
 export const useAuthStore = create<AuthState>()(
