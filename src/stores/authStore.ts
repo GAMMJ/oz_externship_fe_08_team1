@@ -23,7 +23,7 @@ export const useAuthStore = create<AuthState>()(
   devtools(
     (set) => ({
       isAuthenticated: !!localStorage.getItem('accessToken'),
-      isLoading: !!localStorage.getItem('accessToken'),
+      isLoading: true,
       accessToken: localStorage.getItem('accessToken'),
       user: null,
       login: (user, accessToken) => {
