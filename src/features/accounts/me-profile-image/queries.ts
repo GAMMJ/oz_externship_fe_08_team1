@@ -12,7 +12,7 @@ import type {
 export function useGetPresignedUrl() {
   return useMutation({
     mutationFn: async (body: PresignedUrlRequest) => {
-      const { data } = await api.put<PresignedUrlResponse>(
+      const { data } = await api.post<PresignedUrlResponse>(
         'accounts/me/profile-image/presigned-url',
         body
       )

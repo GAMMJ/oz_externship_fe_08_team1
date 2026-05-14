@@ -9,7 +9,7 @@ export const meProfileImageHandlers = [
       key: 'profile/mock-image',
     })
   }),
-  http.post('/mock/s3-upload', () => {
+  http.put('/mock/s3-upload', () => {
     return new HttpResponse(null, { status: 200 })
   }),
   http.patch('/accounts/me/profile-image', () => {

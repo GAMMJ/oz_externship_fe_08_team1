@@ -13,7 +13,7 @@ import { formatPhone } from '@/utils/formatPhone'
 import { useMe } from '@/features/accounts/me'
 import { useAuthStore } from '@/stores/authStore'
 import { ProfileIcon } from '@/components/layout/Header/icons'
-import { MypageEnrolledCourses } from '@/components/mypage/MypageEnrolledCourses/MypageEnrolledCourses'
+import { MypageEnrolledCourses } from '@/components/mypage'
 
 interface InfoRowProps {
   label: string
@@ -62,7 +62,6 @@ function MypageContent() {
     },
     { label: '생년월일', value: me.birthday?.replace(/-/g, '.') ?? '-' },
   ]
-
   return (
     <div className="space-y-8">
       {/* 헤더 - 카드 밖 */}

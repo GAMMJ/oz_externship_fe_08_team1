@@ -95,12 +95,13 @@ function MypageEditContent() {
       // 1. Upload profile image if selected
       if (imageFile) {
         // 1-1. Presigned URL 발급 (PUT)
-        const presigned = await getPresignedUrl.mutateAsync({
+        const { presigned_url, img_url } = await getPresignedUrl.mutateAsync({
           file_name: imageFile.name,
         })
-        console.log('Presigned URL:', presigned)
+
+        console.log('Presigned URL:', presigned_url)
         // 1-2. S3에 실제 파일 업로드 (axios 미사용 — Authorization 헤더 제외)
-        const uploadRes = await fetch(presigned.presigned_url, {
+        const uploadRes = await fetch(presigned_url, {
           method: 'PUT',
           body: imageFile,
           headers: { 'Content-Type': imageFile.type },
@@ -110,7 +111,7 @@ function MypageEditContent() {
         }
         // 1-3. DB에 이미지 URL 저장
         await updateProfileImage.mutateAsync({
-          profile_img_url: presigned.img_url,
+          profile_img_url: img_url,
         })
       }
 
@@ -121,8 +122,7 @@ function MypageEditContent() {
 
       // 3. Navigate back
       navigate(ROUTES.MYPAGE.HOME)
-    } catch (err) {
-      console.error('[handleSave] 저장 실패:', err)
+    } catch {
       setSaveError('저장에 실패했습니다. 다시 시도해주세요.')
     } finally {
       setIsSaving(false)
@@ -179,7 +179,7 @@ function MypageEditContent() {
               <input
                 ref={fileInputRef}
                 type="file"
-                accept="image/*"
+                accept="image/jpeg,image/png,image/webp"
                 onChange={handleFileChange}
                 className="hidden"
               />

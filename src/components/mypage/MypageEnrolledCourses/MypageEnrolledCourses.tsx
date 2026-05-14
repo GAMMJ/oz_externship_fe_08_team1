@@ -16,7 +16,7 @@ export function MypageEnrolledCourses() {
           </div>
 
           {/* 썸네일 (오른쪽) */}
-          <div className="flex h-[163px] w-[163px] flex-shrink-0 items-center justify-center rounded bg-gray-100">
+          <div className="flex h-40.75 w-40.75 flex-shrink-0 items-center justify-center rounded bg-gray-100">
             {firstCourse.course.thumbnail_img_url ? (
               <img
                 src={firstCourse.course.thumbnail_img_url}
