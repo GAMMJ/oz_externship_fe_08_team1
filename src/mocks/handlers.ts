@@ -8,7 +8,7 @@ import { meProfileImageHandlers } from '@/features/accounts/me-profile-image'
 import { deploymentDetailHandlers } from '@/features/exams/deployment-detail'
 import { deploymentStatusHandlers } from '@/features/exams/deployment-status'
 import { submissionsHandlers } from '@/features/exams/submissions'
-import { logoutHandlers } from '@/features/accounts/logout'
+// import { logoutHandlers } from '@/features/accounts/logout'
 import { courseListHandlers } from '@/features/course/list/handler'
 import { cohortHandlers } from '@/features/course/cohorts/handler'
 import { enrollStudentHandlers } from '@/features/accounts/enroll-student/handler'
@@ -31,7 +31,7 @@ export const handlers = [
   ...meProfileImageHandlers,
   ...deploymentDetailHandlers,
   ...submissionsHandlers,
-  ...logoutHandlers,
+  // ...logoutHandlers,
   ...courseListHandlers,
   ...cohortHandlers,
   ...enrollStudentHandlers,
