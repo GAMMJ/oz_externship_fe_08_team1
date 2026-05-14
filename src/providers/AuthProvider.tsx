@@ -27,7 +27,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       })
       .catch(() => {
         queryClient.clear()
-        useAuthStore.getState().logout()
+        useAuthStore.getState().setLoading(false)
       })
       .finally(() => {
         setLoading(false)
