@@ -126,12 +126,14 @@ function MypageContent() {
           수강 중인 과정
         </h2>
 
-        {me.role === 'USER' ? (
-          <p className="text-sm text-gray-400">수강 중인 과정이 없습니다</p>
-        ) : (
+        {me.role === 'STUDENT' ? (
           <MypageErrorBoundary>
-            <MypageEnrolledCourses />
+            <Suspense fallback={<Spinner size="md" />}>
+              <MypageEnrolledCourses />
+            </Suspense>
           </MypageErrorBoundary>
+        ) : (
+          <p className="text-sm text-gray-400">수강 중인 과정이 없습니다</p>
         )}
       </Card>
 

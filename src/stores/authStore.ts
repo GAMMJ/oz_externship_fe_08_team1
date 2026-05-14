@@ -55,6 +55,14 @@ export const useAuthStore = create<AuthState>()(
         localStorage.setItem('accessToken', token)
         set({ accessToken: token }, undefined, 'auth/setAccessToken')
       },
+      setProfileImage: (url) =>
+        set(
+          (state) => ({
+            user: state.user ? { ...state.user, profileImage: url } : null,
+          }),
+          undefined,
+          'auth/setProfileImage'
+        ),
     }),
     { name: 'AuthStore' }
   )

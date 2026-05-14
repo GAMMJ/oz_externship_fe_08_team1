@@ -5,7 +5,12 @@ import {
   useSuspenseQuery,
 } from '@tanstack/react-query'
 import api from '@/api/instance'
-import type { MeResponse, MeUpdateRequest, MeUpdateResponse } from './types'
+import type {
+  MeResponse,
+  MeUpdateRequest,
+  MeUpdateResponse,
+  WithdrawRequest,
+} from './types'
 
 export const meQueries = {
   all: () => ({ queryKey: ['accounts', 'me'] as const }),
@@ -39,8 +44,8 @@ export function useUpdateMe() {
 export function useWithdraw() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async () => {
-      await api.delete('accounts/withdrawal')
+    mutationFn: async (body: WithdrawRequest) => {
+      await api.delete('accounts/withdrawal', { data: body })
     },
     onSuccess: () => {
       queryClient.clear()

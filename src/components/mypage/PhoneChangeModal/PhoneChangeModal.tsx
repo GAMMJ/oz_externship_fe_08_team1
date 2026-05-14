@@ -9,12 +9,6 @@ interface PhoneChangeModalProps {
   onClose: () => void
 }
 
-function toApiPhone(input: string): string {
-  const digits = input.replace(/\D/g, '')
-  if (digits.startsWith('0')) return '+82' + digits.slice(1)
-  return '+' + digits
-}
-
 function formatTime(seconds: number): string {
   const m = Math.floor(seconds / 60)
   const s = seconds % 60
@@ -69,8 +63,8 @@ export function PhoneChangeModal({ isOpen, onClose }: PhoneChangeModalProps) {
   }
 
   function handleSendSms() {
-    const apiPhone = toApiPhone(phoneNumber)
-    if (!/^\+\d{11,15}$/.test(apiPhone)) {
+    const apiPhone = phoneNumber
+    if (!/^010\d{8}$/.test(apiPhone)) {
       setPhoneError('올바른 휴대폰 번호를 입력해주세요.')
       return
     }
@@ -100,7 +94,7 @@ export function PhoneChangeModal({ isOpen, onClose }: PhoneChangeModalProps) {
 
   function handleVerifyCode() {
     verifySms.mutate(
-      { phone_number: toApiPhone(phoneNumber), purpose: 'phone_change', code },
+      { phone_number: phoneNumber, purpose: 'phone_change', code },
       {
         onSuccess: (data) => {
           setSmsToken(data.sms_token)

@@ -1,4 +1,5 @@
 export type UserRole = 'USER' | 'STUDENT' | 'ADMIN'
+export type UserPosition = 'TA' | 'OM' | 'LC' | 'ENROLLED'
 
 // 사용자 정보 응답 타입 (실제 API 명세서 기준)
 export interface MeResponse {
@@ -12,7 +13,7 @@ export interface MeResponse {
   profile_img_url: string | null
   cohort_id: number | null
   role: UserRole
-  position: string | null
+  position: UserPosition | null
   created_at: string
 }
 
@@ -32,6 +33,10 @@ export interface MeUpdateResponse {
   gender: 'M' | 'F' | null
   phone_number: string
   updated_at: string
+}
+
+export interface WithdrawRequest {
+  password: string
 }
 
 // UI 전용: 탈퇴 사유 (API에 전송하지 않음)

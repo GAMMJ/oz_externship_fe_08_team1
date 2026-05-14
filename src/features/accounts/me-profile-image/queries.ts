@@ -33,7 +33,9 @@ export function useUpdateProfileImage() {
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries(meQueries.all())
-      useAuthStore.getState().setProfileImage(variables.profile_img_url)
+      if (variables.profile_img_url) {
+        useAuthStore.getState().setProfileImage(variables.profile_img_url)
+      }
     },
   })
 }

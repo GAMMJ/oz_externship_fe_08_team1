@@ -98,6 +98,7 @@ function MypageEditContent() {
         const presigned = await getPresignedUrl.mutateAsync({
           file_name: imageFile.name,
         })
+        console.log('Presigned URL:', presigned)
         // 1-2. S3에 실제 파일 업로드 (axios 미사용 — Authorization 헤더 제외)
         const uploadRes = await fetch(presigned.presigned_url, {
           method: 'PUT',
@@ -113,13 +114,15 @@ function MypageEditContent() {
         })
       }
 
-      // 2. Update user info
-      await updateMe.mutateAsync({ nickname })
+      // 2. Update user info (닉네임 변경 시에만)
+      if (isNicknameChanged) {
+        await updateMe.mutateAsync({ nickname })
+      }
 
       // 3. Navigate back
       navigate(ROUTES.MYPAGE.HOME)
-    } catch {
-      // Critical 3: 에러 피드백
+    } catch (err) {
+      console.error('[handleSave] 저장 실패:', err)
       setSaveError('저장에 실패했습니다. 다시 시도해주세요.')
     } finally {
       setIsSaving(false)
