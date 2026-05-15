@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { UserRound } from 'lucide-react'
 import { Modal } from '@/components/common/Modal/Modal'
 import { Input } from '@/components/common/Input'
 import { Button } from '@/components/common/Button'
@@ -7,22 +8,9 @@ import { useFindEmail } from '@/features/accounts/find-email'
 
 function PersonIcon() {
   return (
-    <svg
-      width="24"
-      height="24"
-      viewBox="0 0 200 200"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <circle cx="100" cy="100" r="100" fill="#CEC1F0" />
-      <circle cx="100" cy="74" r="26" stroke="#6218D1" strokeWidth="12" />
-      <path
-        d="M54 163C54 133.729 74.5949 110 100 110C125.405 110 146 133.729 146 163"
-        stroke="#6218D1"
-        strokeWidth="12"
-        strokeLinecap="round"
-      />
-    </svg>
+    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-purple-200">
+      <UserRound size={24} stroke="#6218D1" />
+    </div>
   )
 }
 

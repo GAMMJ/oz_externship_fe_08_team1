@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import type { AxiosError } from 'axios'
+import { LockKeyhole } from 'lucide-react'
 import { Modal } from '@/components/common/Modal/Modal'
 import { Input } from '@/components/common/Input'
 import { PasswordInput } from '@/components/common/PasswordInput'
@@ -9,23 +10,9 @@ import { useFindPassword } from '@/features/accounts/find-password'
 
 function LockIcon() {
   return (
-    <svg
-      width="30"
-      height="30"
-      viewBox="0 0 200 200"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <circle cx="100" cy="100" r="80" fill="#D1B3FF" />
-      <path
-        d="M75 90V80C75 66.1929 86.1929 55 100 55C113.807 55 125 66.1929 125 80V90"
-        stroke="#5E00B1"
-        strokeWidth="10"
-        strokeLinecap="round"
-      />
-      <circle cx="100" cy="115" r="35" stroke="#5E00B1" strokeWidth="10" />
-      <circle cx="100" cy="115" r="8" fill="#5E00B1" />
-    </svg>
+    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-purple-200">
+      <LockKeyhole size={24} stroke="#5E00B1" />
+    </div>
   )
 }
 
