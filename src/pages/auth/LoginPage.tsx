@@ -7,11 +7,14 @@ import { Button } from '@/components/common/Button'
 import { SocialLoginButton } from '@/components/common/SocialLoginButton'
 import { AlertModal } from '@/components/common/Modal/AlertModal'
 import { FindEmailModal } from '@/components/find/FindEmailModal'
+import { FindPasswordModal } from '@/components/find/FindPasswordModal'
+import { RestoreWithdrawnModal } from '@/components/auth/RestoreWithdrawnModal'
 import { useLogin } from '@/features/accounts/login/queries'
 import { meQueries } from '@/features/accounts/me/queries'
 import { useAuthStore } from '@/stores/authStore'
 import type { AxiosError } from 'axios'
 import type { LoginErrorResponse } from '@/features/accounts/login/types'
+import { isWithdrawnError } from '@/features/accounts/login/types'
 import logo from '@/assets/logo.png'
 
 export function LoginPage() {
@@ -26,6 +29,9 @@ export function LoginPage() {
   const [alertMessage, setAlertMessage] = useState('')
   const [isAlertOpen, setIsAlertOpen] = useState(false)
   const [isFindEmailOpen, setIsFindEmailOpen] = useState(false)
+  const [isFindPasswordOpen, setIsFindPasswordOpen] = useState(false)
+  const [isRestoreModalOpen, setIsRestoreModalOpen] = useState(false)
+  const [withdrawnExpireAt, setWithdrawnExpireAt] = useState('')
 
   const { mutate: login, isPending } = useLogin()
 
@@ -82,19 +88,17 @@ export function LoginPage() {
           if (typeof errorDetail === 'string') {
             setAlertMessage(errorDetail)
             setIsAlertOpen(true)
+          } else if (isWithdrawnError(errorDetail)) {
+            setWithdrawnExpireAt(errorDetail.expire_at)
+            setIsRestoreModalOpen(true)
           } else {
-            if (errorDetail.detail) {
-              const detail = errorDetail as unknown as {
-                detail: string
-                expire_at: string
-              }
-              setAlertMessage(
-                `${detail.detail}\n복구 가능 날짜: ${detail.expire_at}`
-              )
+            const fieldErrors = errorDetail as Record<string, string[]>
+            if (fieldErrors.detail) {
+              setAlertMessage(fieldErrors.detail[0])
               setIsAlertOpen(true)
             }
-            if (errorDetail.password) {
-              setPasswordError(errorDetail.password[0])
+            if (fieldErrors.password) {
+              setPasswordError(fieldErrors.password[0])
             }
           }
         },
@@ -141,7 +145,7 @@ export function LoginPage() {
           />
           <PasswordInput
             label="비밀번호"
-            placeholder="6~15자리 영문 대소문자, 특수문자 포함"
+            placeholder="6~15자리 영문 대소문자, 숫자, 특수문자 포함"
             value={password}
             onChange={(e) => {
               setPassword(e.target.value)
@@ -155,7 +159,9 @@ export function LoginPage() {
               아이디 찾기
             </button>
             <span>|</span>
-            <button type="button">비밀번호 찾기</button>
+            <button type="button" onClick={() => setIsFindPasswordOpen(true)}>
+              비밀번호 찾기
+            </button>
           </div>
 
           <Button
@@ -178,7 +184,22 @@ export function LoginPage() {
       <FindEmailModal
         isOpen={isFindEmailOpen}
         onClose={() => setIsFindEmailOpen(false)}
-        onFindPassword={() => {}}
+        onFindPassword={() => {
+          setIsFindEmailOpen(false)
+          setIsFindPasswordOpen(true)
+        }}
+      />
+
+      <FindPasswordModal
+        isOpen={isFindPasswordOpen}
+        onClose={() => setIsFindPasswordOpen(false)}
+      />
+      <RestoreWithdrawnModal
+        isOpen={isRestoreModalOpen}
+        onClose={() => setIsRestoreModalOpen(false)}
+        onRestored={() => setIsRestoreModalOpen(false)}
+        initialEmail={email}
+        expireAt={withdrawnExpireAt}
       />
     </main>
   )
