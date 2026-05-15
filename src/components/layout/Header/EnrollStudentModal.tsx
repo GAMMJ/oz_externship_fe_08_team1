@@ -95,7 +95,7 @@ export function EnrollStudentModal({
       onClose={handleClose}
       maxWidth="w-full max-w-[396px] mx-auto"
     >
-      <div className="flex flex-col items-center gap-10">
+      <div className="flex flex-col items-center gap-10 pt-12.5">
         {/* 아이콘 + 제목 + 설명 */}
         <div className="flex flex-col items-center gap-4 text-center">
           <div className="bg-primary-300 flex h-8 w-8 items-center justify-center rounded-full">
