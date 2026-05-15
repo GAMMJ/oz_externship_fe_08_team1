@@ -7,6 +7,7 @@ import { Button } from '@/components/common/Button'
 import { SocialLoginButton } from '@/components/common/SocialLoginButton'
 import { AlertModal } from '@/components/common/Modal/AlertModal'
 import { FindEmailModal } from '@/components/find/FindEmailModal'
+import { FindPasswordModal } from '@/components/find/FindPasswordModal'
 import { RestoreWithdrawnModal } from '@/components/auth/RestoreWithdrawnModal'
 import { useLogin } from '@/features/accounts/login/queries'
 import { meQueries } from '@/features/accounts/me/queries'
@@ -28,6 +29,7 @@ export function LoginPage() {
   const [alertMessage, setAlertMessage] = useState('')
   const [isAlertOpen, setIsAlertOpen] = useState(false)
   const [isFindEmailOpen, setIsFindEmailOpen] = useState(false)
+  const [isFindPasswordOpen, setIsFindPasswordOpen] = useState(false)
   const [isRestoreModalOpen, setIsRestoreModalOpen] = useState(false)
   const [withdrawnExpireAt, setWithdrawnExpireAt] = useState('')
 
@@ -143,7 +145,7 @@ export function LoginPage() {
           />
           <PasswordInput
             label="비밀번호"
-            placeholder="6~15자리 영문 대소문자, 특수문자 포함"
+            placeholder="6~15자리 영문 대소문자, 숫자, 특수문자 포함"
             value={password}
             onChange={(e) => {
               setPassword(e.target.value)
@@ -157,7 +159,9 @@ export function LoginPage() {
               아이디 찾기
             </button>
             <span>|</span>
-            <button type="button">비밀번호 찾기</button>
+            <button type="button" onClick={() => setIsFindPasswordOpen(true)}>
+              비밀번호 찾기
+            </button>
           </div>
 
           <Button
@@ -180,7 +184,15 @@ export function LoginPage() {
       <FindEmailModal
         isOpen={isFindEmailOpen}
         onClose={() => setIsFindEmailOpen(false)}
-        onFindPassword={() => {}}
+        onFindPassword={() => {
+          setIsFindEmailOpen(false)
+          setIsFindPasswordOpen(true)
+        }}
+      />
+
+      <FindPasswordModal
+        isOpen={isFindPasswordOpen}
+        onClose={() => setIsFindPasswordOpen(false)}
       />
       <RestoreWithdrawnModal
         isOpen={isRestoreModalOpen}
