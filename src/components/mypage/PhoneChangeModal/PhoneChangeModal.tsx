@@ -1,18 +1,13 @@
-import { useReducer, useEffect } from 'react'
+import { useReducer } from 'react'
 import { RefreshCw, Check } from 'lucide-react'
 import { Modal, Input, Button } from '@/components'
 import { useSendSms, useVerifySms } from '@/features/accounts/verification'
 import { useChangePhone } from '@/features/accounts/change-phone'
+import { useVerificationTimer } from '@/hooks/useVerificationTimer'
 
 interface PhoneChangeModalProps {
   isOpen: boolean
   onClose: () => void
-}
-
-function formatTime(seconds: number): string {
-  const m = Math.floor(seconds / 60)
-  const s = seconds % 60
-  return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
 }
 
 type State = {
@@ -23,10 +18,6 @@ type State = {
   smsSent: boolean
   codeVerified: boolean
   smsToken: string
-  timeLeft: number
-  endTime: number | null
-  timerActive: boolean
-  isTimedOut: boolean
 }
 
 type Action =
@@ -34,11 +25,10 @@ type Action =
   | { type: 'SET_PHONE_ERROR'; payload: string }
   | { type: 'SET_CODE'; payload: string }
   | { type: 'SET_CODE_ERROR'; payload: string }
-  | { type: 'SMS_SENT'; payload: number }
+  | { type: 'SMS_SENT' }
   | { type: 'SMS_SEND_FAILED'; payload: string }
   | { type: 'PREPARE_RESEND' }
   | { type: 'CODE_VERIFIED'; payload: string }
-  | { type: 'TIMER_TICK'; payload: number }
   | { type: 'TIMER_TIMEOUT' }
   | { type: 'RESET' }
 
@@ -50,10 +40,6 @@ const initialState: State = {
   smsSent: false,
   codeVerified: false,
   smsToken: '',
-  timeLeft: 300,
-  endTime: null,
-  timerActive: false,
-  isTimedOut: false,
 }
 
 function reducer(state: State, action: Action): State {
@@ -67,46 +53,20 @@ function reducer(state: State, action: Action): State {
     case 'SET_CODE_ERROR':
       return { ...state, codeError: action.payload }
     case 'SMS_SENT':
-      return {
-        ...state,
-        smsSent: true,
-        endTime: action.payload,
-        timerActive: true,
-        timeLeft: 300,
-        isTimedOut: false,
-      }
+      return { ...state, smsSent: true }
     case 'SMS_SEND_FAILED':
       return { ...state, phoneError: action.payload }
     case 'PREPARE_RESEND':
-      return {
-        ...state,
-        code: '',
-        codeError: '',
-        codeVerified: false,
-        isTimedOut: false,
-        timeLeft: 300,
-        endTime: null,
-        timerActive: false,
-      }
+      return { ...state, code: '', codeError: '', codeVerified: false }
     case 'CODE_VERIFIED':
       return {
         ...state,
         smsToken: action.payload,
         codeVerified: true,
-        timerActive: false,
-        endTime: null,
         codeError: '',
       }
-    case 'TIMER_TICK':
-      return { ...state, timeLeft: action.payload }
     case 'TIMER_TIMEOUT':
-      return {
-        ...state,
-        timerActive: false,
-        isTimedOut: true,
-        smsSent: false,
-        timeLeft: 0,
-      }
+      return { ...state, smsSent: false }
     case 'RESET':
       return initialState
   }
@@ -122,32 +82,19 @@ export function PhoneChangeModal({ isOpen, onClose }: PhoneChangeModalProps) {
     smsSent,
     codeVerified,
     smsToken,
-    timeLeft,
-    endTime,
-    timerActive,
-    isTimedOut,
   } = state
+
+  const timer = useVerificationTimer({
+    onExpire: () => dispatch({ type: 'TIMER_TIMEOUT' }),
+  })
 
   const sendSms = useSendSms()
   const verifySms = useVerifySms()
   const changePhone = useChangePhone()
 
-  useEffect(() => {
-    if (!timerActive || endTime === null) return
-    const id = setInterval(() => {
-      const remaining = Math.max(0, Math.round((endTime - Date.now()) / 1000))
-      if (remaining <= 0) {
-        clearInterval(id)
-        dispatch({ type: 'TIMER_TIMEOUT' })
-      } else {
-        dispatch({ type: 'TIMER_TICK', payload: remaining })
-      }
-    }, 1000)
-    return () => clearInterval(id)
-  }, [timerActive, endTime])
-
   function handleClose() {
     dispatch({ type: 'RESET' })
+    timer.reset()
     onClose()
   }
 
@@ -155,7 +102,7 @@ export function PhoneChangeModal({ isOpen, onClose }: PhoneChangeModalProps) {
     if (!/^010\d{8}$/.test(phoneNumber)) {
       dispatch({
         type: 'SET_PHONE_ERROR',
-        payload: '숫자만 입력해주세요. (예: 01012341234)',
+        payload: '010으로 시작하는 11자리 번호를 입력해주세요.',
       })
       return
     }
@@ -165,8 +112,10 @@ export function PhoneChangeModal({ isOpen, onClose }: PhoneChangeModalProps) {
     sendSms.mutate(
       { phone_number: phoneNumber, purpose: 'phone_change' },
       {
-        onSuccess: () =>
-          dispatch({ type: 'SMS_SENT', payload: Date.now() + 300_000 }),
+        onSuccess: () => {
+          dispatch({ type: 'SMS_SENT' })
+          timer.start()
+        },
         onError: () =>
           dispatch({
             type: 'SMS_SEND_FAILED',
@@ -180,8 +129,10 @@ export function PhoneChangeModal({ isOpen, onClose }: PhoneChangeModalProps) {
     verifySms.mutate(
       { phone_number: phoneNumber, purpose: 'phone_change', code },
       {
-        onSuccess: (data) =>
-          dispatch({ type: 'CODE_VERIFIED', payload: data.sms_token }),
+        onSuccess: (data) => {
+          dispatch({ type: 'CODE_VERIFIED', payload: data.sms_token })
+          timer.stop()
+        },
         onError: () =>
           dispatch({
             type: 'SET_CODE_ERROR',
@@ -206,11 +157,7 @@ export function PhoneChangeModal({ isOpen, onClose }: PhoneChangeModalProps) {
     )
   }
 
-  const smsButtonLabel = smsSent
-    ? '재전송'
-    : phoneNumber
-      ? '인증번호 받기'
-      : '변경'
+  const smsButtonLabel = smsSent ? '재전송' : '인증번호 받기'
 
   return (
     <Modal
@@ -254,7 +201,7 @@ export function PhoneChangeModal({ isOpen, onClose }: PhoneChangeModalProps) {
                 )
                   handleSendSms()
               }}
-              isError={!!phoneError || isTimedOut}
+              isError={!!phoneError || timer.isTimedOut}
               disabled={codeVerified}
             />
           </div>
@@ -269,7 +216,7 @@ export function PhoneChangeModal({ isOpen, onClose }: PhoneChangeModalProps) {
             {smsButtonLabel}
           </Button>
         </div>
-        {(phoneError || isTimedOut) && (
+        {(phoneError || timer.isTimedOut) && (
           <p className="text-error mt-2 text-xs">
             {phoneError ||
               '*인증번호 전송 시간이 초과되었습니다. 인증번호를 재전송해 주세요.'}
@@ -311,7 +258,7 @@ export function PhoneChangeModal({ isOpen, onClose }: PhoneChangeModalProps) {
                     <Check size={16} className="text-success-dark" />
                   ) : (
                     <span className="text-error text-sm font-medium">
-                      {formatTime(timeLeft)}
+                      {timer.formattedTime}
                     </span>
                   )
                 }

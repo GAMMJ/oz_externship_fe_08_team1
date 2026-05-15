@@ -2,6 +2,8 @@
  * @figma 마이페이지_수정하기  https://www.figma.com/design/4rJmEFUU2HMWVy3qUcYZRs/%EC%A0%9C%EB%AA%A9-%EC%97%86%EC%9D%8C?node-id=1-5240&m=dev
  */
 import { Suspense, useEffect, useRef, useState } from 'react'
+
+const MAX_IMAGE_SIZE = 5 * 1024 * 1024 // 5MB
 import { useNavigate } from 'react-router'
 import { Card, Button, Avatar, Input, Spinner } from '@/components'
 import { MypageErrorBoundary, PhoneChangeModal } from '@/components/mypage'
@@ -16,8 +18,6 @@ import { formatPhone } from '@/utils/formatPhone'
 import { useAuthStore } from '@/stores/authStore'
 import { ProfileIcon } from '@/components/layout/Header/icons'
 import { Camera } from 'lucide-react'
-
-const MAX_IMAGE_SIZE = 5 * 1024 * 1024 // 5MB
 
 function MypageEditContent() {
   const navigate = useNavigate()
@@ -48,17 +48,13 @@ function MypageEditContent() {
   const [isSaving, setIsSaving] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
 
-  // Object URL 메모리 누수 방지 — 이전 URL을 ref로 추적하여 교체 시 해제
-  const prevPreviewRef = useRef<string | null>(null)
+  // Object URL 메모리 누수 방지 — imagePreview 변경 시 이전 URL 해제
   useEffect(() => {
-    if (prevPreviewRef.current) URL.revokeObjectURL(prevPreviewRef.current)
-    prevPreviewRef.current = imagePreview
     return () => {
-      if (prevPreviewRef.current) URL.revokeObjectURL(prevPreviewRef.current)
+      if (imagePreview) URL.revokeObjectURL(imagePreview)
     }
   }, [imagePreview])
 
-  // Critical 2: check-nickname API 연동
   function handleNicknameCheck() {
     checkNickname.mutate(
       { nickname },
