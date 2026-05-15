@@ -9,7 +9,9 @@
 // 나머지는 즉시 결과 페이지로 리다이렉트한다.
 import { useState, useRef, useCallback } from 'react'
 import { useNavigate } from 'react-router'
+import { useQueryClient } from '@tanstack/react-query'
 import { useSubmitExam } from '@/features/exams/submissions'
+import { deploymentsQueries } from '@/features/exams/deployments'
 import { useToastStore } from '@/stores/toastStore'
 import { ROUTES } from '@/constants/routes'
 import { HTTP_STATUS } from '@/constants/httpStatus'
@@ -61,6 +63,7 @@ export function useExamSubmission({
   getSubmissionAnswers,
 }: UseExamSubmissionOptions): UseExamSubmissionResult {
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const showToast = useToastStore((s) => s.show)
   const { mutate: submitExam, isPending: isSubmitting } = useSubmitExam()
 
@@ -73,7 +76,7 @@ export function useExamSubmission({
   // ref는 동기적으로 읽고 쓸 수 있어 즉시 중복 차단이 가능하다.
   const isSubmittingRef = useRef(false)
   // 시험 시작 시각은 마운트 시점에 한 번만 기록해야 하므로 ref로 고정
-  const startedAt = useRef(new Date().toISOString().slice(0, 19))
+  const startedAt = useRef(new Date().toISOString())
 
   const submit = useCallback(
     (reason: SubmitReason, cheatingCount: number) => {
@@ -103,6 +106,9 @@ export function useExamSubmission({
               setIsSubmitted(false)
               return
             }
+            queryClient.removeQueries({
+              queryKey: deploymentsQueries.all().queryKey,
+            })
             const resultUrl = ROUTES.QUIZ.RESULT.replace(
               ':submissionId',
               String(res.submission_id)
@@ -130,7 +136,14 @@ export function useExamSubmission({
         }
       )
     },
-    [deploymentId, getSubmissionAnswers, submitExam, showToast, navigate]
+    [
+      deploymentId,
+      getSubmissionAnswers,
+      submitExam,
+      showToast,
+      navigate,
+      queryClient,
+    ]
   )
 
   const closeCompletionModal = useCallback(() => {

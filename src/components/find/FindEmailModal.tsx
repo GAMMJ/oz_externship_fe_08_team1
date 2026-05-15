@@ -1,9 +1,27 @@
 import { useState } from 'react'
+import { UserRound } from 'lucide-react'
 import { Modal } from '@/components/common/Modal/Modal'
 import { Input } from '@/components/common/Input'
 import { Button } from '@/components/common/Button'
 import { useSendSms, useVerifySms } from '@/features/accounts/signup'
 import { useFindEmail } from '@/features/accounts/find-email'
+
+function PersonIcon() {
+  return (
+    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-purple-200">
+      <UserRound size={24} stroke="#6218D1" />
+    </div>
+  )
+}
+
+function ModalHeader({ title }: { title: string }) {
+  return (
+    <div className="flex flex-col items-center gap-2 pt-4 pb-4">
+      <PersonIcon />
+      <h2 className="text-xl font-semibold text-gray-900">{title}</h2>
+    </div>
+  )
+}
 
 export interface FindEmailModalProps {
   isOpen: boolean
@@ -102,10 +120,11 @@ export function FindEmailModal({
   }
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} title="아이디 찾기">
+    <Modal isOpen={isOpen} onClose={handleClose}>
       {foundEmail ? (
         /* 성공 화면 */
-        <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-4">
+          <ModalHeader title="아이디 찾기" />
           <p className="text-center text-sm text-gray-600">
             입력하신 정보와 일치하는 아이디입니다.
           </p>
@@ -129,28 +148,35 @@ export function FindEmailModal({
         </div>
       ) : (
         /* 입력 화면 */
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-5">
+          <ModalHeader title="아이디 찾기" />
           {errorMessage && (
             <p className="text-center text-sm text-red-500">{errorMessage}</p>
           )}
 
           {/* 이름 */}
-          <Input
-            label="이름*"
-            placeholder="이름을 입력해주세요"
-            value={name}
-            onChange={(e) => {
-              setName(e.target.value)
-              setNameError('')
-            }}
-            isError={Boolean(nameError)}
-            errorMessage={nameError}
-            autoComplete="off"
-          />
+          <div className="flex flex-col gap-2">
+            <p className="text-sm font-medium text-gray-700">
+              이름<span className="text-red-500">*</span>
+            </p>
+            <Input
+              placeholder="이름을 입력해주세요"
+              value={name}
+              onChange={(e) => {
+                setName(e.target.value)
+                setNameError('')
+              }}
+              isError={Boolean(nameError)}
+              errorMessage={nameError}
+              autoComplete="off"
+            />
+          </div>
 
           {/* 휴대전화 */}
           <div className="flex flex-col gap-2">
-            <p className="text-base text-gray-700">휴대전화*</p>
+            <p className="text-sm font-medium text-gray-700">
+              휴대전화<span className="text-red-500">*</span>
+            </p>
             <div className="flex gap-2">
               <Input
                 placeholder="숫자만 입력해주세요"
@@ -205,9 +231,6 @@ export function FindEmailModal({
               <p className="text-sm text-green-600">
                 휴대폰 인증이 완료되었습니다.
               </p>
-            )}
-            {phoneError && !smsSent && (
-              <p className="text-xs text-red-500">{phoneError}</p>
             )}
           </div>
 

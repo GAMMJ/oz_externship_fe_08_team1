@@ -8,6 +8,7 @@ import { ProfileDropdown } from './ProfileDropdown'
 import { EnrollStudentModal } from './EnrollStudentModal'
 import { useAuthStore } from '@/stores/authStore'
 import { useLogout } from '@/features/accounts/logout'
+import { meQueries } from '@/features/accounts/me'
 
 export interface HeaderProps {
   bannerText?: string
@@ -20,11 +21,25 @@ export function Header({
   const [enrollModalOpen, setEnrollModalOpen] = useState(false)
   const navigate = useNavigate()
   const queryClient = useQueryClient()
-  const { isAuthenticated, isLoading, user, logout } = useAuthStore()
+  const { isAuthenticated, isLoading, user, logout, login } = useAuthStore()
   const { mutate: logoutApi } = useLogout()
 
-  const isEnrolled = user?.role === 'USER'
+  const isEnrolled = user?.role === 'STUDENT' || user?.role === 'ADMIN'
 
+  async function handleDropdownOpen() {
+    setDropdownOpen(true)
+    if (!isAuthenticated) return
+    const meData = await queryClient.fetchQuery(meQueries.detail())
+    login(
+      {
+        email: meData.email,
+        nickname: meData.nickname,
+        profileImage: meData.profile_img_url,
+        role: meData.role,
+      },
+      useAuthStore.getState().accessToken ?? ''
+    )
+  }
   return (
     <>
       <header className="flex w-full flex-col">
@@ -51,18 +66,18 @@ export function Header({
               </button>
 
               <nav className="flex items-center gap-15">
-                <a
-                  href="https://community.ozcodingschool.site/"
+                <button
+                  onClick={() => navigate(ROUTES.COMMUNITY.LIST)}
                   className="hover:text-primary px-2.5 py-2.5 text-lg tracking-tight text-gray-900 transition-colors duration-150"
                 >
                   커뮤니티
-                </a>
-                <a
-                  href="https://qna.ozcodingschool.site/"
+                </button>
+                <button
+                  onClick={() => navigate(ROUTES.QNA.LIST)}
                   className="hover:text-primary px-2.5 py-2.5 text-lg tracking-tight text-gray-900 transition-colors duration-150"
                 >
                   질의응답
-                </a>
+                </button>
               </nav>
             </div>
 
@@ -72,7 +87,7 @@ export function Header({
             ) : isAuthenticated && user ? (
               <div
                 className="relative"
-                onMouseEnter={() => setDropdownOpen(true)}
+                onMouseEnter={handleDropdownOpen}
                 onMouseLeave={() => setDropdownOpen(false)}
               >
                 <button
