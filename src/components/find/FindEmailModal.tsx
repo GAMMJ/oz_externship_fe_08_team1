@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import type { AxiosError } from 'axios'
 import { UserRound } from 'lucide-react'
 import { Modal } from '@/components/common/Modal/Modal'
 import { Input } from '@/components/common/Input'
@@ -75,7 +76,21 @@ export function FindEmailModal({
       { phone_number: phone, purpose: 'find_email' },
       {
         onSuccess: () => setSmsSent(true),
-        onError: () => setPhoneError('SMS 발송에 실패했습니다.'),
+        onError: (error: unknown) => {
+          const axiosError = error as AxiosError<{
+            error_detail?: string | string[] | { phone_number?: string[] }
+          }>
+          const errorDetail = axiosError.response?.data?.error_detail
+          if (Array.isArray(errorDetail)) {
+            setPhoneError(errorDetail[0])
+          } else if (typeof errorDetail === 'string') {
+            setPhoneError(errorDetail)
+          } else if (errorDetail?.phone_number) {
+            setPhoneError(errorDetail.phone_number[0])
+          } else {
+            setPhoneError('SMS 발송에 실패했습니다.')
+          }
+        },
       }
     )
   }
@@ -120,7 +135,7 @@ export function FindEmailModal({
   }
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose}>
+    <Modal isOpen={isOpen} onClose={handleClose} closeOnOverlayClick={false}>
       {foundEmail ? (
         /* 성공 화면 */
         <div className="flex flex-col gap-4">
