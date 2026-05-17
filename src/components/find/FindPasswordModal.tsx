@@ -201,7 +201,7 @@ export function FindPasswordModal({ isOpen, onClose }: FindPasswordModalProps) {
   }
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose}>
+    <Modal isOpen={isOpen} onClose={handleClose} closeOnOverlayClick={false}>
       {isSuccess ? (
         <div className="flex flex-col items-center gap-4 py-6">
           <div className="flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
